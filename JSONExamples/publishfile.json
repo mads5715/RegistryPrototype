@@ -1,0 +1,49 @@
+{
+  "_id": "testpackage",
+  "name": "testpackage",
+  "description": "Testing publish api",
+  "dist-tags": {
+    "latest": "1.0.0"
+  },
+  "versions": {
+    "1.0.0": {
+      "name": "testpackage",
+      "version": "1.0.0",
+      "description": "Testing publish api",
+      "main": "main.js",
+      "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+      },
+      "keywords": [
+        "test"
+      ],
+      "author": {
+        "name": "mdc"
+      },
+      "license": "ISC",
+      "readme": "ERROR: No README data found!",
+      "_id": "testpackage@1.0.0",
+      "_nodeVersion": "12.3.1",
+      "_npmVersion": "6.9.0",
+      "maintainers": [
+        {}
+      ],
+      "dist": {
+        "integrity": "sha512-AAKbCoA2NHLm+kXx/nc/d5JkrQ+fiYxwWO4/xmB4ehWA7Pfzm/X0nl0cHPhXOHAFH9fYsE5iB3+10ZEyPYI1GQ==",
+        "shasum": "cb86868cb838deaca2361cfaebeee8432fc90cce",
+        "tarball": "http://192.168.0.10:5000/testpackage/-/testpackage-1.0.0.tgz"
+      }
+    }
+  },
+  "readme": "ERROR: No README data found!",
+  "maintainers": [
+    {}
+  ],
+  "_attachments": {
+    "testpackage-1.0.0.tgz": {
+      "content_type": "application/octet-stream",
+      "data": "H4sIAAAAAAAAA+2SO0/DMBDHO+dTnDx0QsFRGw9dEQMzbLSDcY7m+rAt2wGqqt8dPyrE0I1KFVJ+y53uf0/ZVqqtXOO9LbbeeKMnV4ZzLoSAS/HEnM9hMmsFbxohkh+dtuXRXnuRSww+SBdX+Wufcgv82H/CsQJgWu6RLYAF9OH8EdhdEj7QeTI6aU3Na16iHXrlyIaz8hKrSK/BDm878j1ISyVvLyknJBs/VgmWUh/jaTSUoSkLVW9gyR6dM24B2kASwFtU9E7YLRlMp4BfFKBhsfKUu23x8Glcl9q9/moX3VXW5RB64/ISnSoL7Eih9vnep+cHVp2qW7/ByMjIyC34BpIsmE0ACAAA",
+      "length": 267
+    }
+  }
+}

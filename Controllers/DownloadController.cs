@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SystemFile = System.IO.File;
 
 namespace RegistryPrototype.Controllers
 {
@@ -11,8 +13,14 @@ namespace RegistryPrototype.Controllers
     [ApiController]
     public class DownloadController : ControllerBase
     {
-        public IActionResult DownloadFile() {
-            return Ok();
+        [HttpGet("{packagename}")]
+        public IActionResult DownloadFile(string packagename) {
+            Stream stream = new MemoryStream(SystemFile.ReadAllBytes(packagename));
+
+            if (stream == null)
+                return NotFound(); // returns a NotFoundResult with Status404NotFound response.
+
+            return File(stream, "application/octet-stream"); // returns a FileStreamResult
         }
     }
 }

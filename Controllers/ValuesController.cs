@@ -32,7 +32,7 @@ namespace RegistryPrototype.Controllers
             }
 
             
-            return Ok("{ \"versions\":{ \"0.0.0\":{ \"name\":\"helloworld\",\"version\":\"0.0.0\",\"dependencies\":{ },\"devDependencies\":{ },\"_hasShrinkwrap\":false,\"directories\":{ },\"dist\":{ \"shasum\":\"2e5cc78b0fe5708bde8410e0f4dd2b9e328dd357\",\"tarball\":\"http://192.168.0.10/helloworld/-/helloworld-0.0.0.tgz\"},\"engines\":{ \"node\":\"*\"} } },\"name\":\"helloworld\",\"dist-tags\":{ \"latest\":\"0.0.0\"},\"modified\":\"2011-09-20T23:58:58.133Z\"}");
+            return Ok("{ \"versions\":{ \"0.0.0\":{ \"name\":\"testpackaging\",\"version\":\"1.0.0\",\"dependencies\":{ },\"devDependencies\":{ },\"_hasShrinkwrap\":false,\"directories\":{ },\"dist\":{ \"shasum\":\"2e5cc78b0fe5708bde8410e0f4dd2b9e328dd357\",\"tarball\":\"http://192.168.0.10/api/download/testpackage-0.0.0.tgz\"},\"engines\":{ \"node\":\"*\"} } },\"name\":\"helloworld\",\"dist-tags\":{ \"latest\":\"0.0.0\"},\"modified\":\"2011-09-20T23:58:58.133Z\"}");
         }
 
         // GET api/values/5

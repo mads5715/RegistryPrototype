@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
@@ -12,7 +13,7 @@ namespace RegistryPrototype.Controllers
 {
     [Route("/")]
     [ApiController]
-    public class ValuesController : ControllerBase
+    public class RepositoryController : ControllerBase
     {
         // GET api/values
         [HttpGet("{name}")]
@@ -60,7 +61,7 @@ namespace RegistryPrototype.Controllers
             {
                 Console.WriteLine(item.Key + " / " + item.Value);
             }
-            var data = new byte[10240];//10meg buffer...
+            var data = new byte[10240*1000];//10meg buffer...
             var filename = "";
             var regex = "^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$";
             using (var reader = new StreamReader(HttpContext.Request.Body))
@@ -71,7 +72,7 @@ namespace RegistryPrototype.Controllers
                 filename = jsonObj["name"].ToString()+ "-" + jsonObj["dist-tags"]["latest"].ToString()+".tgz";
                 data = Convert.FromBase64String(jsonObj["_attachments"][filename]["data"].ToString());
                 Console.WriteLine("Upload length: "+ attachmentlenth);
-                if (Convert.ToInt32(attachmentlenth) == data.Length)
+                if (Convert.ToInt32(attachmentlenth) == data.Length && Regex.Match(jsonObj["_attachments"][filename]["data"].ToString(), regex,RegexOptions.CultureInvariant).Success)
                 {
                     Console.WriteLine("The length matched so we can be sure it's at least somewhat not corrupted!");
                 }

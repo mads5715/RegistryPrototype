@@ -22,6 +22,8 @@ namespace RegistryPrototype.DAL
                 var name = jsonObj["name"].ToString();
                 var newInput = input.Replace("/" + name + "/-/", "/api/download/");
                 jsonObj = JObject.Parse(newInput);
+                //Assume a latest version...
+                //TODO: get the 'latest' or only tag, or multiple tags.
                 var latestVersion = jsonObj["dist-tags"]["latest"].ToString();
                 var packageAuther = jsonObj["versions"][latestVersion]["author"]["name"].ToString();
                 var packageDesc = jsonObj["description"].ToString();
@@ -34,13 +36,11 @@ namespace RegistryPrototype.DAL
                 filename = name + "-" + latestVersion + ".tgz";
                 data = Convert.FromBase64String(jsonObj["_attachments"][filename]["data"].ToString());
                 var attachmentlenth = jsonObj["_attachments"][filename]["length"];
-                Console.WriteLine("Upload length: " + attachmentlenth);
+                new LocalFilesystemRegistry().SaveFile(filename,data);
                 if (Convert.ToInt32(attachmentlenth) == data.Length && Regex.Match(jsonObj["_attachments"][filename]["data"].ToString(), regex, RegexOptions.CultureInvariant).Success)
                 {
                     Console.WriteLine("The length matched so we can be sure it's at least somewhat not corrupted!");
                 }
-                Console.WriteLine("Filename: " + filename);
-                Console.WriteLine("Body: " + input);
                 var result = conn.Execute("INSERT INTO Packages (Name,_ID,Filename,Author,PackageDescription,RawMetaData,Versions,DistTags) " +
                     "VALUES (@packagename,@uid,@filenameDB,@auther,@desc,@raw,@versions,@dists)" +
                     " ON DUPLICATE KEY UPDATE " +

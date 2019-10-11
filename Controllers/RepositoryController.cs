@@ -34,7 +34,7 @@ namespace RegistryPrototype.Controllers
             }
 
             
-            return Ok("{ \"versions\":{ \"0.0.0\":{ \"name\":\"testpackaging\",\"version\":\"1.0.0\",\"dependencies\":{ },\"devDependencies\":{ },\"_hasShrinkwrap\":false,\"directories\":{ },\"dist\":{ \"shasum\":\"2e5cc78b0fe5708bde8410e0f4dd2b9e328dd357\",\"tarball\":\"http://192.168.0.10/api/download/testpackage-0.0.0.tgz\"},\"engines\":{ \"node\":\"*\"} } },\"name\":\"helloworld\",\"dist-tags\":{ \"latest\":\"0.0.0\"},\"modified\":\"2011-09-20T23:58:58.133Z\"}");
+            return Ok("{ \"versions\":{ \"0.0.0\":{ \"name\":\"testpackaging\",\"version\":\"1.0.0\",\"dependencies\":{ },\"devDependencies\":{ },\"_hasShrinkwrap\":false,\"directories\":{ },\"dist\":{ \"shasum\":\"2e5cc78b0fe5708bde8410e0f4dd2b9e328dd357\",\"tarball\":\"http://192.168.0.14/api/download/testpackage-0.0.0.tgz\"},\"engines\":{ \"node\":\"*\"} } },\"name\":\"helloworld\",\"dist-tags\":{ \"latest\":\"0.0.0\"},\"modified\":\"2011-09-20T23:58:58.133Z\"}");
         }
 
         // GET api/values/5
@@ -62,26 +62,10 @@ namespace RegistryPrototype.Controllers
             {
                 Console.WriteLine(item.Key + " / " + item.Value);
             }
-            var data = new byte[10240*1000];//10meg buffer...
-            var filename = "";
-            var regex = "^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$";
             using (var reader = new StreamReader(HttpContext.Request.Body))
             {
-               filename = new AddPackageCommand().Execute(reader.ReadToEnd());
-               //var body = reader.ReadToEnd();
-               //var jsonObj = JObject.Parse(body);
-               //var attachmentlenth = jsonObj["_attachments"]["testpackage-1.0.0.tgz"]["length"];
-               //filename = jsonObj["name"].ToString()+ "-" + jsonObj["dist-tags"]["latest"].ToString()+".tgz";
-               //data = Convert.FromBase64String(jsonObj["_attachments"][filename]["data"].ToString());
-               //Console.WriteLine("Upload length: "+ attachmentlenth);
-               //if (Convert.ToInt32(attachmentlenth) == data.Length && Regex.Match(jsonObj["_attachments"][filename]["data"].ToString(), regex,RegexOptions.CultureInvariant).Success)
-               //{
-               //    Console.WriteLine("The length matched so we can be sure it's at least somewhat not corrupted!");
-               //}
-               //Console.WriteLine("Filename: "+ filename);
-               //Console.WriteLine("Body: " + body);
+               _ =new AddPackageCommand().Execute(reader.ReadToEnd());
             }
-            SystemFile.WriteAllBytes(filename, data);
             return Ok();
         }
 

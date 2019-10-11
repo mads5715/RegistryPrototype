@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
+using RegistryPrototype.DAL;
 using SystemFile = System.IO.File;
 
 namespace RegistryPrototype.Controllers
@@ -66,18 +67,19 @@ namespace RegistryPrototype.Controllers
             var regex = "^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$";
             using (var reader = new StreamReader(HttpContext.Request.Body))
             {
-                var body = reader.ReadToEnd();
-                var jsonObj = JObject.Parse(body);
-                var attachmentlenth = jsonObj["_attachments"]["testpackage-1.0.0.tgz"]["length"];
-                filename = jsonObj["name"].ToString()+ "-" + jsonObj["dist-tags"]["latest"].ToString()+".tgz";
-                data = Convert.FromBase64String(jsonObj["_attachments"][filename]["data"].ToString());
-                Console.WriteLine("Upload length: "+ attachmentlenth);
-                if (Convert.ToInt32(attachmentlenth) == data.Length && Regex.Match(jsonObj["_attachments"][filename]["data"].ToString(), regex,RegexOptions.CultureInvariant).Success)
-                {
-                    Console.WriteLine("The length matched so we can be sure it's at least somewhat not corrupted!");
-                }
-                Console.WriteLine("Filename: "+ filename);
-                Console.WriteLine("Body: " + body);
+               filename = new AddPackageCommand().Execute(reader.ReadToEnd());
+               //var body = reader.ReadToEnd();
+               //var jsonObj = JObject.Parse(body);
+               //var attachmentlenth = jsonObj["_attachments"]["testpackage-1.0.0.tgz"]["length"];
+               //filename = jsonObj["name"].ToString()+ "-" + jsonObj["dist-tags"]["latest"].ToString()+".tgz";
+               //data = Convert.FromBase64String(jsonObj["_attachments"][filename]["data"].ToString());
+               //Console.WriteLine("Upload length: "+ attachmentlenth);
+               //if (Convert.ToInt32(attachmentlenth) == data.Length && Regex.Match(jsonObj["_attachments"][filename]["data"].ToString(), regex,RegexOptions.CultureInvariant).Success)
+               //{
+               //    Console.WriteLine("The length matched so we can be sure it's at least somewhat not corrupted!");
+               //}
+               //Console.WriteLine("Filename: "+ filename);
+               //Console.WriteLine("Body: " + body);
             }
             SystemFile.WriteAllBytes(filename, data);
             return Ok();

@@ -42,6 +42,7 @@ namespace RegistryPrototype.DAL
         }
         public string Execute(string rawInput)
         {
+            //Let's just get the dirty stuff fixed first, making the download url proper, so we do not have to thing about it later.
             var input = ReplaceDownloadURL(rawInput);
             using (var conn = new MySqlConnection("server = 192.168.0.18; user id = RegistryClone; password = RegistryClone2019; port = 3306; database = NPMRegistryClone;"))
             {
@@ -52,8 +53,8 @@ namespace RegistryPrototype.DAL
                 var name = jsonObj["name"].ToString();
                 //Assume a latest version...
                 //TODO: get the 'latest' or only tag, or multiple tags.. We got the first Tag, and we remove {} from the string....
+                //jsonObj["dist-tags"].First.First -> jsonOjs[dist-tags]['latest'][version-number]
                 var latestVersion = jsonObj["dist-tags"].First.First.ToString().Replace("{","").Replace("}","");
-
                 var packageAuther = jsonObj["versions"][latestVersion]["author"]["name"].ToString();
                 var packageDesc = jsonObj["description"].ToString();
                 var packageVersions = jsonObj["versions"].ToString();
@@ -64,9 +65,11 @@ namespace RegistryPrototype.DAL
                 data = Convert.FromBase64String(jsonObj["_attachments"][filename]["data"].ToString());
                 var attachmentlenth = jsonObj["_attachments"][filename]["length"];
                 new LocalFilesystemRegistry().SaveFile(filename,data);
+                //Save file directly to FS, perhaps we can use this for something later
+                new LocalFilesystemRegistry().SaveFile(name+".json", Encoding.UTF8.GetBytes(input));
                 if (Convert.ToInt32(attachmentlenth) == data.Length && Regex.Match(jsonObj["_attachments"][filename]["data"].ToString(), regex, RegexOptions.CultureInvariant).Success)
                 {
-                    
+                    //There's a slight chance that it might not have been tampered too much with, well just checking size isn't enough but a fair starting point   
                 }
                 var result = conn.Execute("INSERT INTO Packages (Name,_ID,Filename,Author,PackageDescription,RawMetaData,Versions,DistTags) " +
                     "VALUES (@packagename,@uid,@filenameDB,@auther,@desc,@raw,@versions,@dists)" +
@@ -92,8 +95,6 @@ namespace RegistryPrototype.DAL
                     });
                 return filename;
             }
-
-
         }
     }
 }

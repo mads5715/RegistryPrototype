@@ -1,0 +1,20 @@
+version: "2"
+
+services:
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: 'NPMRegistryClone'
+      MYSQL_USER: 'RegistryClone'
+      MYSQL_PASSWORD: 'RegistryClone2019'
+      MYSQL_ROOT_PASSWORD: 'SuperSecretRootPassword'
+
+  registry:
+    image: npmregistryclone
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mysql

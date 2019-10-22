@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using RegistryPrototype.DAL;
+using RestSharp;
 using SystemFile = System.IO.File;
 
 namespace RegistryPrototype.Controllers
@@ -16,6 +17,10 @@ namespace RegistryPrototype.Controllers
     [ApiController]
     public class RepositoryController : ControllerBase
     {
+        private RestClient forwardClient;
+        public RepositoryController() {
+            forwardClient = new RestClient("https://registry.npmjs.org/");
+        }
         // GET api/values
         [HttpGet("{name}")]
         public IActionResult Get(string name)
@@ -32,9 +37,24 @@ namespace RegistryPrototype.Controllers
 
                 Console.WriteLine("Body: " + body);
             }
-
-            
-            return Ok("{ \"versions\":{ \"0.0.0\":{ \"name\":\"testpackaging\",\"version\":\"1.0.0\",\"dependencies\":{ },\"devDependencies\":{ },\"_hasShrinkwrap\":false,\"directories\":{ },\"dist\":{ \"shasum\":\"2e5cc78b0fe5708bde8410e0f4dd2b9e328dd357\",\"tarball\":\"http://192.168.0.14/api/download/testpackage-0.0.0.tgz\"},\"engines\":{ \"node\":\"*\"} } },\"name\":\"helloworld\",\"dist-tags\":{ \"latest\":\"0.0.0\"},\"modified\":\"2011-09-20T23:58:58.133Z\"}");
+            //Can the raw published json really be used for the download? Nope...
+            //TODO: get the "passthrough" mode working
+            var request = new RestRequest("{name}", Method.GET);
+            request.AddUrlSegment("name",name);
+            request.AddHeader("Accept", "application/vnd.npm.install-v1+json");
+            var returnContent = "";
+            var response = forwardClient.Execute(request);
+            returnContent = response.Content;
+            if (returnContent != string.Empty)
+            {
+                //Always passthrough...
+                return Ok(returnContent);
+            }
+            else
+            {
+                return StatusCode(404);
+            }
+            //return Ok(new GetRawPackageQuery().Execute(name));
         }
 
         // GET api/values/5

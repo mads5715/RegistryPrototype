@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using RegistryPrototype.DAL;
@@ -37,10 +38,11 @@ namespace RegistryPrototype.Controllers
 
                 Console.WriteLine("Body: " + body);
             }
-            //Can the raw published json really be used for the download? Nope...
-            //TODO: get the "passthrough" mode working
+            //Always passthrough for now, perhaps make a shallow copy of every package asked for,
+            // so we have a fast local copy instead of relying on this slow forwarding.
+            //Check if we have a copy in the DB or on file possibly, if use of files get's implemented
             var request = new RestRequest("{name}", Method.GET);
-            request.AddUrlSegment("name",name);
+            request.AddUrlSegment("name",HttpUtility.UrlDecode(name));
             request.AddHeader("Accept", "application/vnd.npm.install-v1+json");
             var returnContent = "";
             var response = forwardClient.Execute(request);
@@ -58,6 +60,7 @@ namespace RegistryPrototype.Controllers
         }
 
         // GET api/values/5
+        //This is unused code, it doesn't work as intended...
         [HttpGet]
         [Route("{packagename}/-/{filename}")]
         public IActionResult GetFile(string packagename, string filename)

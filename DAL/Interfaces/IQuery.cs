@@ -9,4 +9,8 @@ namespace RegistryPrototype.DAL
     {
         T Execute(Y input);
     }
+    public interface IQuery<T>
+    {
+        T Execute();
+    }
 }

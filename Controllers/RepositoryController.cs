@@ -7,8 +7,10 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RegistryPrototype.DAL;
+using RegistryPrototype.DAL.Repositories;
 using RestSharp;
 using SystemFile = System.IO.File;
 
@@ -18,28 +20,36 @@ namespace RegistryPrototype.Controllers
     [ApiController]
     public class RepositoryController : ControllerBase
     {
-        private RestClient forwardClient;
+        private IRestClient forwardClient;
         public RepositoryController() {
             forwardClient = new RestClient("https://registry.npmjs.org/");
         }
         // GET api/values
         [HttpGet("{name}")]
-        public IActionResult Get(string name)
+        public async Task<IActionResult> Get(string name)
         {
             Debug.WriteLine("NPM want's package with name: "+ name);
-            var headers = HttpContext.Request.Headers;
-            foreach (var item in headers)
+            //var headers = HttpContext.Request.Headers;
+            //foreach (var item in headers)
+            //{
+            //    Console.WriteLine(item.Key + " / " + item.Value);
+            //}
+            //using (var reader = new StreamReader(HttpContext.Request.Body))
+            //{
+            //    var body = reader.ReadToEnd();
+            //
+            //    Console.WriteLine("Body: " + body);
+            //}
+            using (var repo = new PackageRepository())
             {
-                Console.WriteLine(item.Key + " / " + item.Value);
-            }
-            using (var reader = new StreamReader(HttpContext.Request.Body))
-            {
-                var body = reader.ReadToEnd();
-
-                Console.WriteLine("Body: " + body);
+                var decodedname = HttpUtility.UrlDecode(name);
+                if (repo.ElementExist(decodedname))
+                {
+                    return await Task.FromResult(Ok(JsonConvert.SerializeObject(repo.GetSingleElement(decodedname))));
+                }
             }
             //Always passthrough for now, perhaps make a shallow copy of every package asked for,
-            // so we have a fast local copy instead of relying on this slow forwarding.
+            // so we have a fast local copy instead of relying on this slower forwarding.
             //Check if we have a copy in the DB or on file possibly, if use of files get's implemented
             var request = new RestRequest("{name}", Method.GET);
             request.AddUrlSegment("name",HttpUtility.UrlDecode(name));
@@ -50,7 +60,7 @@ namespace RegistryPrototype.Controllers
             if (returnContent != string.Empty)
             {
                 //Always passthrough...
-                return Ok(returnContent);
+                return await Task.FromResult(Ok(returnContent));
             }
             else
             {

@@ -7,6 +7,7 @@ namespace RegistryPrototype.BE
 {
     public class RetreivalObject
     {
+        public string _ID { get; set; }
         public string RawMetaData { get; set; }
     }
 }

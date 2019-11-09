@@ -49,9 +49,12 @@ namespace RegistryPrototype.Controllers
                     return await Task.FromResult(Ok(repo.GetSingleElement(decodedname)));
                 }
             }
-            //Always passthrough for now, perhaps make a shallow copy of every package asked for,
-            // so we have a fast local copy instead of relying on this slower forwarding.
-            //Check if we have a copy in the DB or on file possibly, if use of files get's implemented
+            /*Always passthrough for now, perhaps make a shallow copy of every package asked for,
+             so we have a fast local copy instead of relying on this slower forwarding.
+            Check if we have a copy in the DB or on file possibly, if use of files get's implemented
+            CORRECTION:We only passthrough if we can't find the package in the DB
+            TODO: Pass to a background task to save the new package in the DB for future use, so we have a copy
+             */
             var request = new RestRequest("{name}", Method.GET);
             request.AddUrlSegment("name",HttpUtility.UrlDecode(name));
             request.AddHeader("Accept", "application/vnd.npm.install-v1+json");
@@ -60,8 +63,8 @@ namespace RegistryPrototype.Controllers
             returnContent = response.Content;
             if (returnContent != string.Empty)
             {
-                //Always passthrough...
-                return await Task.FromResult(Ok(returnContent));
+                //We parse it to get it to return a proper JSON object, kinda weird but it works...
+                return await Task.FromResult(Ok(JObject.Parse(returnContent)));
             }
             else
             {
@@ -86,6 +89,7 @@ namespace RegistryPrototype.Controllers
         {
         }
 
+        //The publish method, we still print the headers here just to be sure everything is okay
         // PUT api/values/5
         [HttpPut("{name}")]
         public IActionResult Put(string name)

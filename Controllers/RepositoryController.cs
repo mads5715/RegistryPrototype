@@ -25,6 +25,7 @@ namespace RegistryPrototype.Controllers
             forwardClient = new RestClient("https://registry.npmjs.org/");
         }
         // GET api/values
+        [Produces("application/vnd.npm.install-v1+json")]
         [HttpGet("{name}")]
         public async Task<IActionResult> Get(string name)
         {
@@ -45,7 +46,7 @@ namespace RegistryPrototype.Controllers
                 var decodedname = HttpUtility.UrlDecode(name);
                 if (repo.ElementExist(decodedname))
                 {
-                    return await Task.FromResult(Ok(JsonConvert.SerializeObject(repo.GetSingleElement(decodedname))));
+                    return await Task.FromResult(Ok(repo.GetSingleElement(decodedname)));
                 }
             }
             //Always passthrough for now, perhaps make a shallow copy of every package asked for,

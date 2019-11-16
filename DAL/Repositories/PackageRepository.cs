@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace RegistryPrototype.DAL.Repositories
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1063:Implement IDisposable Correctly", Justification = "<Pending>")]
     public class PackageRepository : IRepository<MinimalPackage, string>
     {
         private readonly List<MinimalPackage> _dbOriginal;
@@ -24,12 +25,12 @@ namespace RegistryPrototype.DAL.Repositories
 
         public void Dispose()
         {
-            var newPackages = _packages.Except(_dbOriginal);
-            //Insert this list into the DB
-            foreach (var item in newPackages)
-            {
-                _ = new AddPackageCommand().Execute(item.RawMetaData);
-            }
+           //var newPackages = _packages.Except(_dbOriginal);
+           ////Insert this list into the DB
+           //foreach (var item in newPackages)
+           //{
+           //    _ = new AddPackageCommand().Execute(item.RawMetaData);
+           //}
         }
 
         public bool ElementExist(string input)

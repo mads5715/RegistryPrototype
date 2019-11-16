@@ -32,6 +32,23 @@ namespace RegistryPrototype.Controllers
             }
             return StatusCode(403);
         }
+        [Route("search")]
+        [HttpGet]
+        public IActionResult Search()
+        {
+            var headers = HttpContext.Request.Headers;
+            foreach (var item in headers)
+            {
+                Console.WriteLine(item.Key + " / " + item.Value);
+            }
+            using (var reader = new StreamReader(HttpContext.Request.Body))
+            {
+                var body = reader.ReadToEnd();
+
+                Console.WriteLine("Body: " + body);
+            }
+            return StatusCode(403);
+        }
     }
 
 

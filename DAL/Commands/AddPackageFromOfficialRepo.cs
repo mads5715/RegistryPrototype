@@ -1,22 +1,20 @@
 ﻿using Dapper;
+using Hangfire;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json.Linq;
-using RestSharp;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace RegistryPrototype.DAL.Commands
 {
     public class AddPackageFromOfficialRepo : ICommand<string>
     {
-        private async void DownloadLocalCopyOfPackage(string path) {
+        public async Task<int> DownloadLocalCopyOfPackage(string path)
+        {
             using (HttpClient client = new HttpClient())
             {
                 using (HttpResponseMessage response = await client.GetAsync(path))
@@ -25,7 +23,9 @@ namespace RegistryPrototype.DAL.Commands
                     var ms = new MemoryStream();
                     streamToReadFrom.CopyTo(ms);
                     new LocalFilesystemRegistry().SaveFile(path.Split("/").Last(), ms.ToArray());
+                    return 1;
                 }
+                return -1;
             }
         }
         private string ReplaceDownloadURL(string rawInput)
@@ -53,8 +53,8 @@ namespace RegistryPrototype.DAL.Commands
                         endString += item;
                 }
 
-               // var urlSplit = endString.Split("//").Last().Split("/").First();
-               
+                // var urlSplit = endString.Split("//").Last().Split("/").First();
+
 
                 input = Regex.Replace(rawInput, httpRegex, endString, options);
                 //The last is just for debugging purposes while developing locally
@@ -66,12 +66,13 @@ namespace RegistryPrototype.DAL.Commands
         {
             var jsonObjPreFix = JObject.Parse(rawInput);
             var latestVersion = jsonObjPreFix["dist-tags"].First.First.ToString().Replace("{", "").Replace("}", "");
-            //The following code is ment to download the tgz so we can servce it from our own repository, but there's some issues with race conditions...
-            //var dist = jsonObjPreFix["versions"][latestVersion]["dist"]["tarball"].ToString();
-            //if (!File.Exists(dist.Split("/").Last()))
-            //{
-            //    new Thread(() => DownloadLocalCopyOfPackage(dist)).Start();
-            //}
+            //The following code is ment to download the tgz so we can serve it from our own repository, but there's some issues with race conditions...
+            var dist = jsonObjPreFix["versions"][latestVersion]["dist"]["tarball"].ToString();
+            if (!File.Exists(dist.Split("/").Last()))
+            {
+                //string jobId = BackgroundJob.Enqueue(() => DownloadPackageAndUpdateDB.Execute());
+           
+            }
             //Let's just get the dirty stuff fixed first, making the download url proper, so we do not have to thing about it later.
             //var input = ReplaceDownloadURL(rawInput);
             var input = rawInput;
@@ -84,7 +85,7 @@ namespace RegistryPrototype.DAL.Commands
                 var name = jsonObj["name"].ToString();
                 var packageVersions = jsonObj["versions"].ToString();
                 var distTags = jsonObj["dist-tags"].ToString();
-                
+
                 //String magic....
                 var guid = name;
                 filename = name + "-" + latestVersion + ".tgz";
@@ -97,7 +98,7 @@ namespace RegistryPrototype.DAL.Commands
                 //new LocalFilesystemRegistry().SaveFile(name + ".json", Encoding.UTF8.GetBytes(input));
                 //if (Convert.ToInt32(attachmentlenth) == data.Length && Regex.Match(jsonObj["_attachments"][filename]["data"].ToString(), regex, RegexOptions.CultureInvariant).Success)
                 //{
-                    //There's a slight chance that it might not have been tampered too much with, well just checking size isn't enough but a fair starting point   
+                //There's a slight chance that it might not have been tampered too much with, well just checking size isn't enough but a fair starting point   
                 //}
                 var result = conn.Execute("INSERT INTO Packages (Name,_ID,RawMetaData,Versions,DistTags,Filename) " +
                     "VALUES (@packagename,@uid,@raw,@versions,@dists,@fileName)" +

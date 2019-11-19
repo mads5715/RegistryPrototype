@@ -13,55 +13,55 @@ namespace RegistryPrototype.DAL.Commands
 {
     public class AddPackageFromOfficialRepo : ICommand<string>
     {
-        public async Task<int> DownloadLocalCopyOfPackage(string path)
-        {
-            using (HttpClient client = new HttpClient())
-            {
-                using (HttpResponseMessage response = await client.GetAsync(path))
-                using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
-                {
-                    var ms = new MemoryStream();
-                    streamToReadFrom.CopyTo(ms);
-                    new LocalFilesystemRegistry().SaveFile(path.Split("/").Last(), ms.ToArray());
-                    return 1;
-                }
-                return -1;
-            }
-        }
-        private string ReplaceDownloadURL(string rawInput)
-        {
-            var tempjsonObj = JObject.Parse(rawInput);
-            var packname = tempjsonObj["name"].ToString();
-            //Find the URL Regex Expression
-            var httpRegex = @"((\w+:\/\/)[-a-zA-Z0-9:@;?&=\/%\+\.\*!'\(\),\$_\{\}\^~\[\]`#|]+)";
-            //We want the Regex engine to run as if it was JS, as it's easier to test against...
-            var options = RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.ECMAScript;
-            var match = Regex.Match(rawInput, httpRegex, options);
-            var input = rawInput;
-            //Old school find, split, replace, build string
-            if (match.Value.Contains("http"))
-            {
-                var stringSplit = match.Value.Split("/-/");
-                var endString = "";
-                foreach (var item in stringSplit)
-                {
-                    if (item.EndsWith(packname))
-                    {
-                        endString = item.Replace(packname, "api/download/");
-                    }
-                    else
-                        endString += item;
-                }
-
-                // var urlSplit = endString.Split("//").Last().Split("/").First();
-
-
-                input = Regex.Replace(rawInput, httpRegex, endString, options);
-                //The last is just for debugging purposes while developing locally
-                //input = input.Replace(urlSplit, "192.168.0.10:5000").Replace("https","http");
-            }
-            return input;
-        }
+       //public async Task<int> DownloadLocalCopyOfPackage(string path)
+       //{
+       //    using (HttpClient client = new HttpClient())
+       //    {
+       //        using (HttpResponseMessage response = await client.GetAsync(path))
+       //        using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
+       //        {
+       //            var ms = new MemoryStream();
+       //            streamToReadFrom.CopyTo(ms);
+       //            new LocalFilesystemRegistry().SaveFile(path.Split("/").Last(), ms.ToArray());
+       //            return 1;
+       //        }
+       //        return -1;
+       //    }
+       //}
+       //private string ReplaceDownloadURL(string rawInput)
+       //{
+       //    var tempjsonObj = JObject.Parse(rawInput);
+       //    var packname = tempjsonObj["name"].ToString();
+       //    //Find the URL Regex Expression
+       //    var httpRegex = @"((\w+:\/\/)[-a-zA-Z0-9:@;?&=\/%\+\.\*!'\(\),\$_\{\}\^~\[\]`#|]+)";
+       //    //We want the Regex engine to run as if it was JS, as it's easier to test against...
+       //    var options = RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.ECMAScript;
+       //    var match = Regex.Match(rawInput, httpRegex, options);
+       //    var input = rawInput;
+       //    //Old school find, split, replace, build string
+       //    if (match.Value.Contains("http"))
+       //    {
+       //        var stringSplit = match.Value.Split("/-/");
+       //        var endString = "";
+       //        foreach (var item in stringSplit)
+       //        {
+       //            if (item.EndsWith(packname))
+       //            {
+       //                endString = item.Replace(packname, "api/download/");
+       //            }
+       //            else
+       //                endString += item;
+       //        }
+       //
+       //        // var urlSplit = endString.Split("//").Last().Split("/").First();
+       //
+       //
+       //        input = Regex.Replace(rawInput, httpRegex, endString, options);
+       //        //The last is just for debugging purposes while developing locally
+       //        //input = input.Replace(urlSplit, "192.168.0.10:5000").Replace("https","http");
+       //    }
+       //    return input;
+       //}
         public string Execute(string rawInput)
         {
             var jsonObjPreFix = JObject.Parse(rawInput);
@@ -71,7 +71,6 @@ namespace RegistryPrototype.DAL.Commands
             if (!File.Exists(dist.Split("/").Last()))
             {
                 //string jobId = BackgroundJob.Enqueue(() => DownloadPackageAndUpdateDB.Execute());
-           
             }
             //Let's just get the dirty stuff fixed first, making the download url proper, so we do not have to thing about it later.
             //var input = ReplaceDownloadURL(rawInput);

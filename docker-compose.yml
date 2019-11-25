@@ -1,20 +1,39 @@
 version: "2"
-
+#add fabio and consul to the setup
 services:
-  mysql:
+  mysqlServer:
     image: mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    volumes:
+      - ./mysql-scripts:/docker-entrypoint-initdb.d
     environment:
       MYSQL_DATABASE: 'NPMRegistryClone'
       MYSQL_USER: 'RegistryClone'
       MYSQL_PASSWORD: 'RegistryClone2019'
       MYSQL_ROOT_PASSWORD: 'SuperSecretRootPassword'
 
+  sse:
+    image: mdwserver.ddns.net:4439/library/setupscriptexecutor:latest
+    environment: 
+      SQLServerType: 'MySQL'
+      ConnectionString: 'server=mysqlServer;userid=root;password=SuperSecretRootPassword;port=3306;database=NPMRegistryClone;'
+      SQLScriptFileName: 'CreateAllDB.sql'
+    volumes: 
+    - ./mysql-scripts\CreateAllDBs.sql:/CreateAllDB.sql
+    depends_on: 
+    - mysqlServer
+
   registry:
     image: npmregistryclone
     build:
       context: .
       dockerfile: Dockerfile
+    #environment: 
+    #    - FabioPrepend: 'npmrepo'
     ports:
       - "5000:5000"
     depends_on:
-      - mysql
+      - sse
+      - mysqlServer
+ 

@@ -41,7 +41,7 @@ namespace RegistryPrototype.Controllers
                 var decodedname = HttpUtility.UrlDecode(name);
                 if (_packageRepo.ElementExist(decodedname))
                 {
-                    Console.WriteLine("In the DB!");
+                    Debug.WriteLine("In the DB!");
                     return Ok(_packageRepo.GetSingleElement(decodedname));
                 }
             }
@@ -64,7 +64,7 @@ namespace RegistryPrototype.Controllers
                     var decodedname = HttpUtility.UrlDecode(name);
                     if (_packageRepo.ElementExist(decodedname))
                     {
-                        Console.WriteLine("Passing on to the official repo");
+                        Debug.WriteLine("Passing on to the official repo");
                         return Ok(_packageRepo.GetSingleElement(decodedname));
                     }
                     else
@@ -109,7 +109,7 @@ namespace RegistryPrototype.Controllers
             var headers = HttpContext.Request.Headers;
             foreach (var item in headers)
             {
-                Console.WriteLine(item.Key + " / " + item.Value);
+                Debug.WriteLine(item.Key + " / " + item.Value);
             }
             using (var reader = new StreamReader(HttpContext.Request.Body))
             {

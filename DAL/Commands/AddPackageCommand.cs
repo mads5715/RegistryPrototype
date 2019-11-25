@@ -44,7 +44,7 @@ namespace RegistryPrototype.DAL
         {
             //Let's just get the dirty stuff fixed first, making the download url proper, so we do not have to thing about it later.
             var input = ReplaceDownloadURL(rawInput);
-            using (var conn = new MySqlConnection("server = 192.168.0.18; user id = RegistryClone; password = RegistryClone2019; port = 3306; database = NPMRegistryClone;"))
+            using (var conn = new MySqlConnection("server = mysqlServer; user id = RegistryClone; password = RegistryClone2019; port = 3306; database = NPMRegistryClone;"))
             {
                 var filename = "";
                 var regex = "^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$";

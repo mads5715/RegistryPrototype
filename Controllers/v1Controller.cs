@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -22,13 +23,13 @@ namespace RegistryPrototype.Controllers
             var headers = HttpContext.Request.Headers;
             foreach (var item in headers)
             {
-                Console.WriteLine(item.Key + " / " + item.Value);
+                Debug.WriteLine(item.Key + " / " + item.Value);
             }
             using (var reader = new StreamReader(HttpContext.Request.Body))
             {
                 var body = reader.ReadToEnd();
 
-                Console.WriteLine("Body: " + body);
+                Debug.WriteLine("Body: " + body);
             }
             return StatusCode(403);
         }
@@ -39,13 +40,13 @@ namespace RegistryPrototype.Controllers
             var headers = HttpContext.Request.Headers;
             foreach (var item in headers)
             {
-                Console.WriteLine(item.Key + " / " + item.Value);
+                Debug.WriteLine(item.Key + " / " + item.Value);
             }
             using (var reader = new StreamReader(HttpContext.Request.Body))
             {
                 var body = reader.ReadToEnd();
 
-                Console.WriteLine("Body: " + body);
+                Debug.WriteLine("Body: " + body);
             }
             return StatusCode(403);
         }
@@ -79,13 +80,13 @@ namespace RegistryPrototype.Controllers
             var headers = HttpContext.Request.Headers;
             foreach (var item in headers)
             {
-                Console.WriteLine(item.Key + " / " + item.Value);
+                Debug.WriteLine(item.Key + " / " + item.Value);
             }
             using (var reader = new StreamReader(HttpContext.Request.Body))
             {
                 var body = reader.ReadToEnd();
 
-                Console.WriteLine("Body: " + body);
+                Debug.WriteLine("Body: " + body);
             }
             return StatusCode(200);
         }

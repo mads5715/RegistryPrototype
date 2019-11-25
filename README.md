@@ -36,3 +36,6 @@ This tool should only be used internally, this is partly due to it's current dev
 When a package is requested that the tool does not have, it will forward it to the public repository as explained earlier.
 And of cource, I'm not and neither is the tool affiliated with NPM Inc.
 This is all for fun, and just trying to recreate it so it might be usefull for other projects like stated before. There also seem to be a lack of open-souce NPM repos, that is in languages many people use, therefor this tool is made in C#, and not Clojure, or something different.
+
+# What this tool is not!
+This tool is not meant to compete with NPMJS or infringe on their official registry, this is simply for people who want to use one for internal security audits, while using a piece open-source, free software, such that they can change and modify to their use.

@@ -13,6 +13,10 @@ Simply trying to recreate an NPM registry in C# mostly using the docs, and the c
 And many more potential features one could wish for in such a tool
 ## How To Use(Will change slowly over time)
 See the Docker-Compose section.
+Once running, youøll want to set the registry of your local NPM client like so:
+```bash
+npm config set registry http://ip-address:port/
+```
 Once it's up and running, it will allow you to publish locally, and install from it(globally).
 A local publish means it at the moment only allows to be published to it selv, and it replaces the url such that it can be downloaded also.
 Once you ask for an install it will check it's internal DB, and check if it has the package, if not, it will then forward your call to the official Repo, and in the process cache it for future calls, this is to speed up delivery.

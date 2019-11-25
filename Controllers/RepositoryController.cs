@@ -58,7 +58,7 @@ namespace RegistryPrototype.Controllers
             if (returnContent != string.Empty)
             {
                 //Save to disk, and to DB, then return response
-                new Thread(() => { _ = new AddPackageFromOfficialRepo().Execute(JObject.Parse(returnContent).ToString()); }).Start(); 
+                new Thread(() => { _ = AddPackageFromOfficialRepo.Execute(JObject.Parse(returnContent).ToString()); }).Start(); 
                 using (_packageRepo)
                 {
                     var decodedname = HttpUtility.UrlDecode(name);

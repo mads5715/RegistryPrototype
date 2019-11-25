@@ -11,58 +11,10 @@ using System.Threading.Tasks;
 
 namespace RegistryPrototype.DAL.Commands
 {
-    public class AddPackageFromOfficialRepo : ICommand<string>
+    public static class AddPackageFromOfficialRepo 
     {
-       //public async Task<int> DownloadLocalCopyOfPackage(string path)
-       //{
-       //    using (HttpClient client = new HttpClient())
-       //    {
-       //        using (HttpResponseMessage response = await client.GetAsync(path))
-       //        using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
-       //        {
-       //            var ms = new MemoryStream();
-       //            streamToReadFrom.CopyTo(ms);
-       //            new LocalFilesystemRegistry().SaveFile(path.Split("/").Last(), ms.ToArray());
-       //            return 1;
-       //        }
-       //        return -1;
-       //    }
-       //}
-       //private string ReplaceDownloadURL(string rawInput)
-       //{
-       //    var tempjsonObj = JObject.Parse(rawInput);
-       //    var packname = tempjsonObj["name"].ToString();
-       //    //Find the URL Regex Expression
-       //    var httpRegex = @"((\w+:\/\/)[-a-zA-Z0-9:@;?&=\/%\+\.\*!'\(\),\$_\{\}\^~\[\]`#|]+)";
-       //    //We want the Regex engine to run as if it was JS, as it's easier to test against...
-       //    var options = RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.ECMAScript;
-       //    var match = Regex.Match(rawInput, httpRegex, options);
-       //    var input = rawInput;
-       //    //Old school find, split, replace, build string
-       //    if (match.Value.Contains("http"))
-       //    {
-       //        var stringSplit = match.Value.Split("/-/");
-       //        var endString = "";
-       //        foreach (var item in stringSplit)
-       //        {
-       //            if (item.EndsWith(packname))
-       //            {
-       //                endString = item.Replace(packname, "api/download/");
-       //            }
-       //            else
-       //                endString += item;
-       //        }
-       //
-       //        // var urlSplit = endString.Split("//").Last().Split("/").First();
-       //
-       //
-       //        input = Regex.Replace(rawInput, httpRegex, endString, options);
-       //        //The last is just for debugging purposes while developing locally
-       //        //input = input.Replace(urlSplit, "192.168.0.10:5000").Replace("https","http");
-       //    }
-       //    return input;
-       //}
-        public string Execute(string rawInput)
+ 
+        public static string Execute(string rawInput)
         {
             var jsonObjPreFix = JObject.Parse(rawInput);
             var latestVersion = jsonObjPreFix["dist-tags"].First.First.ToString().Replace("{", "").Replace("}", "");
@@ -84,7 +36,8 @@ namespace RegistryPrototype.DAL.Commands
                 var name = jsonObj["name"].ToString();
                 var packageVersions = jsonObj["versions"].ToString();
                 var distTags = jsonObj["dist-tags"].ToString();
-
+                var ofModified = jsonObj["modified"].ToString();
+                var modified = DateTime.Parse(ofModified);
                 //String magic....
                 var guid = name;
                 filename = name + "-" + latestVersion + ".tgz";
@@ -99,13 +52,14 @@ namespace RegistryPrototype.DAL.Commands
                 //{
                 //There's a slight chance that it might not have been tampered too much with, well just checking size isn't enough but a fair starting point   
                 //}
-                var result = conn.Execute("INSERT INTO Packages (Name,_ID,RawMetaData,Versions,DistTags,Filename) " +
-                    "VALUES (@packagename,@uid,@raw,@versions,@dists,@fileName)" +
+                var result = conn.Execute("INSERT INTO Packages (Name,_ID,RawMetaData,Versions,DistTags,Filename,Modified,IsFromPublicRepo) " +
+                    "VALUES (@packagename,@uid,@raw,@versions,@dists,@fileName,@offModified,1)" +
                     " ON DUPLICATE KEY UPDATE " +
                     "Name=@packagename," +
                     "RawMetaData=@raw," +
                     "Versions=@versions," +
-                    "DistTags=@dists",
+                    "DistTags=@dists," +
+                    "Modified=@offModified",
                     new
                     {
                         packagename = name,
@@ -113,8 +67,8 @@ namespace RegistryPrototype.DAL.Commands
                         raw = input,
                         versions = packageVersions,
                         dists = distTags,
-                        fileName = filename
-
+                        fileName = filename,
+                        offModified = modified
                     });
                 return filename;
             }

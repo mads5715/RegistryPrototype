@@ -88,9 +88,8 @@ namespace RegistryPrototype.DAL.Commands
                 var packageVersions = jsonObj["versions"].ToString();
                 using (var conn = new MySqlConnection("server = 192.168.0.18; user id = RegistryClone; password = RegistryClone2019; port = 3306; database = NPMRegistryClone;"))
                 {
-
-                    var result = conn.Execute("INSERT INTO Packages (_ID,RawMetaData,Versions) " +
-                        "VALUES (@name,@rawMetaData,@versions) ON DUPLICATE KEY UPDATE " +
+                    var result = conn.Execute("INSERT INTO Packages (_ID,RawMetaData,Versions,IFromPublicRepo) " +
+                        "VALUES (@name,@rawMetaData,@versions,'1') ON DUPLICATE KEY UPDATE " +
                         "RawMetaData = @rawMetaDataOne, Versions = @versionsOne",
                         new
                         {
@@ -100,7 +99,6 @@ namespace RegistryPrototype.DAL.Commands
                             rawMetaDataOne = input,
                             versionsOne = packageVersions
                         });
-                    
                 }
             }
         }

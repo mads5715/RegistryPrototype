@@ -41,7 +41,7 @@ namespace RegistryPrototype.Controllers
     {
         private IRestClient forwardClient;
         IRestRequest request = new RestRequest("{name}", Method.GET).AddHeader("Accept", "application/vnd.npm.install-v1+json");
-        private IRepository<MinimalPackage, string> _packageRepo;
+        private readonly IRepository<MinimalPackage, string> _packageRepo;
         public RepositoryController(IRepository<MinimalPackage,string> repository) {
             forwardClient = new RestClient("https://registry.npmjs.org/");
             _packageRepo = repository;
@@ -49,9 +49,21 @@ namespace RegistryPrototype.Controllers
         // GET api/values
         [Produces("application/vnd.npm.install-v1+json")]
         [HttpGet("{name}")]
-        public async Task<IActionResult> Get(string name)
+        public IActionResult Get(string name)
         {
-            Debug.WriteLine("NPM want's package with name: "+ name);
+            var headers = HttpContext.Request.Headers;
+            foreach (var item in headers)
+            {
+                if (item.Key == "User-Agent")
+                {
+                    if (item.Value.ToString().StartsWith("npm/"))
+                    {
+                        Debug.WriteLine("NPM is calling");
+                    }
+                }
+            }
+            
+            Debug.WriteLine("NPM want's package with name: " + name);
             using (_packageRepo)
             {
                 var decodedname = HttpUtility.UrlDecode(name);
@@ -74,7 +86,7 @@ namespace RegistryPrototype.Controllers
             if (returnContent != string.Empty)
             {
                 //Save to disk, and to DB, then return response
-                new Thread(() => { _ = AddPackageFromOfficialRepo.Execute(JObject.Parse(returnContent).ToString()); }).Start(); 
+                new Thread(() => { _ = AddPackageFromOfficialRepo.Execute(JObject.Parse(returnContent).ToString()); }).Start();
                 using (_packageRepo)
                 {
                     var decodedname = HttpUtility.UrlDecode(name);
@@ -86,7 +98,7 @@ namespace RegistryPrototype.Controllers
                     else
                     {
                         var jobj = JObject.Parse(returnContent);
-                        _packageRepo.InsertElement(new MinimalPackage {RawMetaData = returnContent});
+                        _packageRepo.InsertElement(new MinimalPackage { RawMetaData = returnContent });
                     }
                 }
                 //We parse it to get it to return a proper JSON object, it's also really slow, kinda weird but it works...

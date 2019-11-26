@@ -28,7 +28,7 @@ namespace RegistryPrototype.DAL
     {
         public List<MinimalPackage> Execute()
         {
-            var connectionString = "server = mysqlServer; user id = RegistryClone; password = RegistryClone2019; port = 3306; database = NPMRegistryClone;";
+            var connectionString = ServerStrings.GetMySQLConnectionString();
             var _lists = new List<MinimalPackage>();
             using (var conn = new MySqlConnection(connectionString))
             {

@@ -102,7 +102,8 @@ namespace RegistryPrototype.DAL.Commands
                 var input = ReplaceDownloadURL(item.RawMetaData);
                 var jsonObj = JObject.Parse(input);
                 var packageVersions = jsonObj["versions"].ToString();
-                using (var conn = new MySqlConnection("server = mysqlServer; user id = RegistryClone; password = RegistryClone2019; port = 3306; database = NPMRegistryClone;"))
+                var connectionString = ServerStrings.GetMySQLConnectionString();
+                using (var conn = new MySqlConnection(connectionString))
                 {
                     var result = conn.Execute("INSERT INTO Packages (_ID,RawMetaData,Versions,IFromPublicRepo) " +
                         "VALUES (@name,@rawMetaData,@versions,'1') ON DUPLICATE KEY UPDATE " +

@@ -22,8 +22,10 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RestSharp;
 
 namespace RegistryPrototype.Controllers
 {
@@ -73,6 +75,12 @@ namespace RegistryPrototype.Controllers
     [ApiController]
     public class AuditController : ControllerBase 
     {
+        private IRestClient forwardClient;
+        IRestRequest request = new RestRequest("{name}", Method.GET).AddHeader("Accept", "application/vnd.npm.install-v1+json");
+        public AuditController()
+        {
+            forwardClient = new RestClient("https://registry.npmjs.org/-/npm/v1/security/audits/quick");
+        }
         /*
             This controller is in the same v1Controller.cs file because the endpoints are both v1, althrough they do have seperate functions. 
         */
@@ -91,6 +99,18 @@ namespace RegistryPrototype.Controllers
         [HttpPost]
         public IActionResult Security()
         {
+            request.AddBody(Request.Body);
+            var returnContent = "";
+            var response = forwardClient.Execute(request);
+            returnContent = response.Content;
+            if (returnContent != string.Empty)
+            {
+                Console.WriteLine(returnContent);
+            }
+            
+            
+            
+            
             //The header says it's gzip but the GZipStream fails when trying to unzip it...
             //Perhaps we just forward this call to the main npm repo to be on the safe side..
             var headers = HttpContext.Request.Headers;

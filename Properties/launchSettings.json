@@ -21,6 +21,7 @@
       "commandName": "Project",
       "launchUrl": "api/values",
       "environmentVariables": {
+        "ConnectionString": "server = 192.168.0.18; user id = RegistryClone; password = RegistryClone2019; port = 3306; database = NPMRegistryClone",
         "LocalAddress": "192.168.0.10:5000",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "LocalUrl": "http://192.168.0.10:5000"

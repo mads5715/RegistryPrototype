@@ -18,14 +18,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RegistryPrototype.DAL
 {
-    public class LocalFilesystemRegistry
+    public static class LocalFilesystemRegistry
     {
-        public void SaveFile(string filename,byte[] data) {
+        public static void SaveFile(string filename,byte[] data) {
             File.WriteAllBytes(filename, data);
+        }
+        public static string ReadStringFile(string filename) {
+            return File.ReadAllText(filename, Encoding.UTF8); ;
         }
     }
 }

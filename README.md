@@ -3,6 +3,7 @@ Simply trying to recreate an NPM registry in C# mostly using the docs, and the c
 ## Current Functionality
 - [x] Publish
 - [x] Install
+- [ ] Search
 - [ ] Login
 - [ ] Orgs
 - [ ] Everything else

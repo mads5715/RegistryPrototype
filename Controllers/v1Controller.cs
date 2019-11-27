@@ -25,6 +25,8 @@ using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RegistryPrototype.BE;
+using RegistryPrototype.DAL;
 using RestSharp;
 
 namespace RegistryPrototype.Controllers
@@ -33,7 +35,15 @@ namespace RegistryPrototype.Controllers
     [ApiController]
     public class v1Controller : ControllerBase
     {
-        
+        private IRestClient forwardClient;
+        IRestRequest request = new RestRequest(Method.GET);
+        private readonly IRepository<MinimalPackage, string> _repo;
+        public v1Controller(IRepository<MinimalPackage,string> repository)
+        {
+            forwardClient = new RestClient("https://registry.npmjs.org/-/v1/search");
+            _repo = repository;
+        }
+
         [Route("login")]
         [HttpPost]
         public IActionResult Login()
@@ -53,19 +63,44 @@ namespace RegistryPrototype.Controllers
         }
         [Route("search")]
         [HttpGet]
-        public IActionResult Search()
+        public IActionResult Search(string text, int size, int from,float quality,float popularity, float maintenance)
         {
-            var headers = HttpContext.Request.Headers;
-            foreach (var item in headers)
+            //Is it just me or is does this seem like an ugly hack?...
+            using (_repo)
             {
-                Debug.WriteLine(item.Key + " / " + item.Value);
+                if (_repo.GetAllElements().First(x => x._ID.Contains(text)) != null)
+                {
+                    if (!_repo.GetAllElements().First(x => x._ID.Contains(text)).IsFromPublicRepo)
+                    {
+                        var item = _repo.GetAllElements().First(x => x._ID.Contains(text));
+                        return Ok(new SearchObject { Packages = new List<SearchPackage> { new SearchPackage { RawMetaData = item.RawMetaData, Modified = item.Modified  } } });
+                    }
+                }
             }
-            using (var reader = new StreamReader(HttpContext.Request.Body))
+            request.AddQueryParameter("text",text);
+            var returnContent = "";
+            var response = forwardClient.Execute(request);
+            returnContent = response.Content;
+            if (returnContent != string.Empty)
             {
-                var body = reader.ReadToEnd();
-
-                Debug.WriteLine("Body: " + body);
+                return Ok(returnContent);
             }
+           //var headers = HttpContext.Request.Headers;
+           //foreach (var item in headers)
+           //{
+           //    Debug.WriteLine(item.Key + " / " + item.Value);
+           //}
+           //using (var reader = new StreamReader(HttpContext.Request.Body))
+           //{
+           //    var body = reader.ReadToEnd();
+           //
+           //    Debug.WriteLine("Body: " + body);
+           //}
+           //Console.WriteLine("Search String: " + text);
+           //if (text == "yargs")
+           //{
+           //    return Ok(LocalFilesystemRegistry.ReadStringFile("JSONExamples/json.json"));
+           //}
             return StatusCode(403);
         }
     }

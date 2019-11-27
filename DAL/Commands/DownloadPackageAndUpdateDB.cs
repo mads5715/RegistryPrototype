@@ -41,7 +41,7 @@ namespace RegistryPrototype.DAL.Commands
                 {
                     var ms = new MemoryStream();
                     streamToReadFrom.CopyTo(ms);
-                    new LocalFilesystemRegistry().SaveFile(path.Split("/").Last(), ms.ToArray());
+                    LocalFilesystemRegistry.SaveFile(path.Split("/").Last(), ms.ToArray());
                     return 1;
                 }
                 return -1;

@@ -81,9 +81,9 @@ namespace RegistryPrototype.DAL
                 filename = name + "-" + latestVersion + ".tgz";
                 data = Convert.FromBase64String(jsonObj["_attachments"][filename]["data"].ToString());
                 var attachmentlenth = jsonObj["_attachments"][filename]["length"];
-                new LocalFilesystemRegistry().SaveFile(filename,data);
+                LocalFilesystemRegistry.SaveFile(filename,data);
                 //Save file directly to FS, perhaps we can use this for something later
-                new LocalFilesystemRegistry().SaveFile(name+".json", Encoding.UTF8.GetBytes(input));
+                LocalFilesystemRegistry.SaveFile(name+".json", Encoding.UTF8.GetBytes(input));
                 if (Convert.ToInt32(attachmentlenth) == data.Length && Regex.Match(jsonObj["_attachments"][filename]["data"].ToString(), regex, RegexOptions.CultureInvariant).Success)
                 {
                     //There's a slight chance that it might not have been tampered too much with, well just checking size isn't enough but a fair starting point   

@@ -28,5 +28,6 @@ namespace RegistryPrototype.DAL
         void InsertElement(T element);
         bool DeleteElement(Y input);
         bool ElementExist(Y input);
+
     }
 }

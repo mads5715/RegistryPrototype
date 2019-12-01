@@ -47,6 +47,7 @@ namespace RegistryPrototype
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddSingleton<IRepository<MinimalPackage, string>,PackageRepository>();
+            services.AddSingleton<IRepository<User, string>,UserRepository>();
             //Take a look at Hangfire, see if just passing an IDBConnection down to the actual middlelayer is an option, with minimal hassle, and if so, use MySQL instead of MMSSQL...
             services.AddHangfire(x => x.UseStorage(new MySqlStorage("server = 192.168.0.18; user id = RegistryClone; password = RegistryClone2019; port = 3306; database = HangfireRegistry;", new MySqlStorageOptions(){TablePrefix = "HangFire"})));
             //services.AddHangfireServer();

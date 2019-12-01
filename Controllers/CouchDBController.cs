@@ -18,9 +18,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using RegistryPrototype.BE;
+using RegistryPrototype.DAL;
+using RegistryPrototype.DAL.Commands;
 
 namespace RegistryPrototype.Controllers
 {
@@ -28,6 +35,10 @@ namespace RegistryPrototype.Controllers
     [ApiController]
     public class CouchDBController : ControllerBase
     {
+        private readonly IRepository<User, string> _userRepo;
+        public CouchDBController(IRepository<User,string> repo) {
+            _userRepo = repo;
+        }
         // GET: api/CouchDB
         [HttpGet]
         public IEnumerable<string> Get()
@@ -36,10 +47,24 @@ namespace RegistryPrototype.Controllers
         }
 
         // GET: api/CouchDB/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
+        [Route("org.couchdb.user:")]
+        [HttpGet("{id}")]
+        public IActionResult Get(string id)
         {
-            return "value";
+            var headers = HttpContext.Request.Headers;
+            foreach (var item in headers)
+            {
+                Console.WriteLine(item.Key + " / " + item.Value);
+            }
+            using (var reader = new StreamReader(HttpContext.Request.Body))
+            {
+                var body = reader.ReadToEnd();
+               
+                Console.WriteLine("Body: " + body);
+            }
+            
+            Console.WriteLine("Username: " + id);
+            return Ok(new LoginResponse { Token = "PissOff.ekjrhtgfdkjghedrkjhgdf.dfgkjedrhgkdfjhgkldsejrgh.sedfsefsef", IsOk = true });
         }
 
         // POST: api/CouchDB
@@ -51,8 +76,9 @@ namespace RegistryPrototype.Controllers
         // PUT: api/CouchDB/5
         [Route("org.couchdb.user:")]
         [HttpPut("{username}")]
-        public void Put(string username)
+        public IActionResult CreateUser(string username)
         {
+            
             var headers = HttpContext.Request.Headers;
             foreach (var item in headers)
             {
@@ -61,10 +87,14 @@ namespace RegistryPrototype.Controllers
             using (var reader = new StreamReader(HttpContext.Request.Body))
             {
                 var body = reader.ReadToEnd();
-
+                var userToInsert = JsonConvert.DeserializeObject<User>(body);
+                var result = new PasswordHasher<User>().HashPassword(userToInsert, userToInsert.Password);
+                userToInsert.Password = result;
+                _ = new AddUserCommand().Execute(userToInsert);
                 Console.WriteLine("Body: " + body);
             }
-            Console.WriteLine("Username: "+ username);
+            return Ok(new LoginResponse {Token="PissOff.ekjrhtgfdkjghedrkjhgdf.dfgkjedrhgkdfjhgkldsejrgh.sedfsefsef", IsOk = true });
+            Console.WriteLine("Username: "+ username.Split(':').Last());
         }
 
         // DELETE: api/ApiWithActions/5

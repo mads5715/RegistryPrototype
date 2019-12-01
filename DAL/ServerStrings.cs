@@ -20,5 +20,13 @@ namespace RegistryPrototype.DAL
                 return Environment.GetEnvironmentVariable("ConnectionString");
             }
         }
+
+        public static string GetString(string stringName) {
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(stringName))){
+                return ""; //User Cryptographic Random for the salt
+            } else {
+                return Environment.GetEnvironmentVariable(stringName);
+            }
+        }
     }
 }

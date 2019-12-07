@@ -24,9 +24,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 using RegistryPrototype.BE;
 using RegistryPrototype.DAL;
+using RegistryPrototype.DAL.Commands;
 using RestSharp;
 
 namespace RegistryPrototype.Controllers
@@ -51,14 +55,30 @@ namespace RegistryPrototype.Controllers
             var headers = HttpContext.Request.Headers;
             foreach (var item in headers)
             {
-                Debug.WriteLine(item.Key + " / " + item.Value);
+                Console.WriteLine(item.Key + " / " + item.Value);
+                if (headers.ContainsKey("Authorization"))
+                {
+                    var token = new StringValues();
+                    headers.TryGetValue("Authorization", out token);
+                    var isValid = TokenCache.Instance.ValidateToken(token.ToString());
+                    if (isValid)
+                    {
+                        return StatusCode(201);
+                    }
+                }
+                else
+                {
+                    return NotFound();
+                }
             }
-            using (var reader = new StreamReader(HttpContext.Request.Body))
-            {
-                var body = reader.ReadToEnd();
-
-                Debug.WriteLine("Body: " + body);
-            }
+            //using (var reader = new StreamReader(HttpContext.Request.Body))
+            //{
+            //    var body = reader.ReadToEnd();
+            //
+            //    Console.WriteLine("Body: " + body);
+            //}
+            
+           //Just return 403?? Seems weird but seem to work so far...  -.-
             return StatusCode(403);
         }
         [Route("search")]

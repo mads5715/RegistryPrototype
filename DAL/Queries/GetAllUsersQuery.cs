@@ -16,7 +16,7 @@ namespace RegistryPrototype.DAL.Queries
             var _lists = new List<User>();
             using (var conn = new MySqlConnection(connectionString))
             {
-                _lists = conn.Query<User>("SELECT Email,UserName AS Name,UserPassword,(SELECT Name FROM UserTypes WHERE ID = Users.UserType) AS UserType FROM Users").ToList();
+                _lists = conn.Query<User>("SELECT Email,UserName AS Name,UserPassword as Password,(SELECT Name FROM UserTypes WHERE ID = Users.UserType) AS UserType FROM Users").ToList();
                 return _lists;
             }
         }

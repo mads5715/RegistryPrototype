@@ -52,6 +52,7 @@ namespace RegistryPrototype.Controllers
         public IActionResult Get(string id)
         {
             var headers = HttpContext.Request.Headers;
+            Console.WriteLine("UserGet being called:");
             foreach (var item in headers)
             {
                 Console.WriteLine(item.Key + " / " + item.Value);
@@ -64,7 +65,7 @@ namespace RegistryPrototype.Controllers
             }
             
             Console.WriteLine("Username: " + id);
-            return Ok(new LoginResponse { Token = "PissOff.ekjrhtgfdkjghedrkjhgdf.dfgkjedrhgkdfjhgkldsejrgh.sedfsefsef", IsOk = true });
+            return Ok(new LoginResponse { Token = TokenCache.Instance.GetTokenForUser(id), IsOk = true });
         }
 
         // POST: api/CouchDB
@@ -78,29 +79,53 @@ namespace RegistryPrototype.Controllers
         [HttpPut("{username}")]
         public IActionResult CreateUser(string username)
         {
-            
-            var headers = HttpContext.Request.Headers;
-            foreach (var item in headers)
-            {
-                Console.WriteLine(item.Key + " / " + item.Value);
-            }
+            //Console.WriteLine("CreateUser, but being used as a Login call, is being called:");
+            //var headers = HttpContext.Request.Headers;
+            //foreach (var item in headers)
+            //{
+            //    Console.WriteLine(item.Key + " / " + item.Value);
+            //}
             using (var reader = new StreamReader(HttpContext.Request.Body))
             {
                 var body = reader.ReadToEnd();
                 var userToInsert = JsonConvert.DeserializeObject<User>(body);
-                var result = new PasswordHasher<User>().HashPassword(userToInsert, userToInsert.Password);
-                userToInsert.Password = result;
-                _ = new AddUserCommand().Execute(userToInsert);
-                Console.WriteLine("Body: " + body);
+                using (_userRepo)
+                {
+                    var userExists = _userRepo.ElementExist(userToInsert.Name);
+                    if (userExists)
+                    {
+                        var dbUser = _userRepo.GetSingleElement(userToInsert.Name);
+                        var result = new PasswordHasher<User>().VerifyHashedPassword(userToInsert, dbUser.Password,userToInsert.Password);
+                        Console.WriteLine(result);
+                        if (result == PasswordVerificationResult.Success)
+                        {
+                            return Ok(new LoginResponse { Token = TokenCache.Instance.GetTokenForUser(username), IsOk = true });
+                        }
+                    }
+                    else
+                    {
+                        return StatusCode(401, new { ok = false, message = "Possibly wrong username, password or email try again" });
+                    }
+                }
+                //If user doesn't exist return error and only allow admin controllers to add users...
+                //if (true)
+                //{
+                //    var result = new PasswordHasher<User>().HashPassword(userToInsert, userToInsert.Password);
+                //    userToInsert.Password = result;
+                //    _ = new AddUserCommand().Execute(userToInsert);
+                //}
+               
             }
-            return Ok(new LoginResponse {Token="PissOff.ekjrhtgfdkjghedrkjhgdf.dfgkjedrhgkdfjhgkldsejrgh.sedfsefsef", IsOk = true });
-            Console.WriteLine("Username: "+ username.Split(':').Last());
+            return Unauthorized();
         }
 
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        // DELETE: user token
+        [Route("token/{tokeninput}")]
+        [HttpDelete]
+        public IActionResult Delete(string tokeninput)
         {
+            TokenCache.Instance.RemoveToken(tokeninput);
+            return Ok();
         }
     }
 }

@@ -17,12 +17,12 @@ namespace RegistryPrototype.DAL.Repositories
 
         public bool DeleteElement(string input)
         {
-            throw new NotImplementedException();
+            return _users.RemoveAll(x => x.Name == input) <= 1 ? true : false;
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            return;
         }
 
         public bool ElementExist(string input)

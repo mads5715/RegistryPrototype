@@ -4,7 +4,7 @@ Simply trying to recreate an NPM registry in C# mostly using the docs, and the c
 - [x] Publish
 - [x] Install
 - [ ] Search
-- [ ] Login
+- [x] Login/Logout (They are implemented and the command 'npm login' works, but not hooked up to any checks against other parts of the API like packages. plus every token is kept in-memory)
 - [ ] Orgs
 - [ ] Everything else
 ### Hopefull future Functionality

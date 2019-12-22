@@ -43,12 +43,12 @@ namespace RegistryPrototype.DAL.Repositories
 
         public void Dispose()
         {
-           var newPackages = _packages.Except(_dbOriginal);
+          // var newPackages = _packages.Except(_dbOriginal);
            //Insert this list into the DB
-           foreach (var item in newPackages)
-           {
-               _ = new AddPackageCommand().Execute(item.RawMetaData);
-           }
+          //foreach (var item in newPackages)
+          //{
+          //    _ = new AddPackageCommand().Execute(item.RawMetaData);
+          //}
         }
 
         public bool ElementExist(string input)

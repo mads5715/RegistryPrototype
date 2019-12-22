@@ -12,7 +12,17 @@ namespace RegistryPrototype.BE
         public List<SearchPackage> Packages { get; set; }
 
         [JsonProperty("total")]
-        public int Total { get { return Packages.Count; } }
+        public int Total
+        {
+            get
+            {
+                if (Packages != null)
+                {
+                    return Packages.Count;
+                }
+                else { return 0; }
+            }
+        }
 
         [JsonProperty("time")]
         public DateTime Date { get { return DateTime.Now; } }

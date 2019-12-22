@@ -88,13 +88,16 @@ namespace RegistryPrototype.Controllers
             //Is it just me or is does this seem like an ugly hack?...
             using (_repo)
             {
-                if (_repo.GetAllElements().First(x => x._ID.Contains(text)) != null)
+                if (_repo.GetAllElements().FirstOrDefault(x => x._ID.Contains(text)) != null)
                 {
                     if (!_repo.GetAllElements().First(x => x._ID.Contains(text)).IsFromPublicRepo)
                     {
                         var item = _repo.GetAllElements().First(x => x._ID.Contains(text));
-                        return Ok(new SearchObject { Packages = new List<SearchPackage> { new SearchPackage { RawMetaData = item.RawMetaData, Modified = item.Modified  } } });
+                        return Ok(new SearchObject { Packages = new List<SearchPackage> { new SearchPackage { RawMetaData = item.RawMetaData, Modified = item.Modified } } });
                     }
+                }
+                else {
+                    return Ok(new SearchObject());
                 }
             }
             request.AddQueryParameter("text",text);

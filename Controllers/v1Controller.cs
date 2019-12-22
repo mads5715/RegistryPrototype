@@ -86,6 +86,10 @@ namespace RegistryPrototype.Controllers
         public IActionResult Search(string text, int size, int from,float quality,float popularity, float maintenance)
         {
             //Is it just me or is does this seem like an ugly hack?...
+            /*Well changing to a FirstOrDefault from First, 
+             * and checking the search object if there's any packages,
+             * if not return 0 for amount of items,
+             * makes the search seem to work*/
             using (_repo)
             {
                 if (_repo.GetAllElements().FirstOrDefault(x => x._ID.Contains(text)) != null)
@@ -97,6 +101,7 @@ namespace RegistryPrototype.Controllers
                     }
                 }
                 else {
+                    //TODO: Do a search on the official repo on behalf of the user
                     return Ok(new SearchObject());
                 }
             }

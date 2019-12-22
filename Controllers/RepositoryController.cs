@@ -51,6 +51,10 @@ namespace RegistryPrototype.Controllers
         [HttpGet("{name}")]
         public IActionResult Get(string name)
         {
+            /*Remove the header dump in the future, 
+             * check for the auth token sent,
+             * then load the packages that particular user has access to,
+             * and all public ones too, plus the official repos public ones*/
             var headers = HttpContext.Request.Headers;
             foreach (var item in headers)
             {
@@ -73,11 +77,12 @@ namespace RegistryPrototype.Controllers
                     return Ok(_packageRepo.GetSingleElement(decodedname));
                 }
             }
-            /*Always passthrough for now, perhaps make a shallow copy of every package asked for,
-             so we have a fast local copy instead of relying on this slower forwarding.
+            /*We check first to see if we have it, and if not, then we pass it along,
+             * perhaps make a shallow copy of every package asked for,
+             so we have a fast local copy instead of relying on this forwarding to the official repo, 
+             they have call limits from non-clients...
             Check if we have a copy in the DB or on file possibly, if use of files get's implemented
             CORRECTION:We only passthrough if we can't find the package in the DB
-            TODO: Pass to a background task to save the new package in the DB for future use, so we have a copy
              */
             request.AddUrlSegment("name", HttpUtility.UrlDecode(name));
             var returnContent = "";

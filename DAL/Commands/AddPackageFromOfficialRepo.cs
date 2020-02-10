@@ -69,6 +69,15 @@ namespace RegistryPrototype.DAL.Commands
                 //{
                 //There's a slight chance that it might not have been tampered too much with, well just checking size isn't enough but a fair starting point   
                 //}
+
+                //Check for the size of the package we are inserting, if it's bigger than 10mb do not insert it into the DB, it's a too big package for that, just store it on the fs
+                //and then store the filename in db, and take care of it in the PackageRepository, load the file into ram, and the other needed data
+                var size = System.Text.Encoding.Unicode.GetByteCount(rawInput);
+                if (size > 13*1024*1024)
+                {
+                    Console.WriteLine("Raw size larger than 13mb save it locally!");
+                    Console.WriteLine("Size: " + size);
+                }
                 var result = conn.Execute("INSERT INTO Packages (Name,_ID,RawMetaData,Versions,DistTags,Filename,Modified,IsFromPublicRepo) " +
                     "VALUES (@packagename,@uid,@raw,@versions,@dists,@fileName,@offModified,1)" +
                     " ON DUPLICATE KEY UPDATE " +

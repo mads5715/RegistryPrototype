@@ -16,6 +16,7 @@
 */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -23,6 +24,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RegistryPrototype.BE;
 using RegistryPrototype.DAL;
@@ -32,19 +34,22 @@ namespace RegistryPrototype.DAL.Commands
 {
     public static class DownloadPackageAndUpdateDB
     {
+        private const string _exMessage = "Size is too large for the DB!";
+
         public static async Task<int> DownloadLocalCopyOfPackage(string path)
         {
             using (HttpClient client = new HttpClient())
             {
-                using (HttpResponseMessage response = await client.GetAsync(path))
-                using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
+                using (HttpResponseMessage response = await client.GetAsync(new Uri(path)).ConfigureAwait(true))
+                using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync().ConfigureAwait(true))
                 {
-                    var ms = new MemoryStream();
-                    streamToReadFrom.CopyTo(ms);
-                    LocalFilesystemRegistry.SaveFile(path.Split("/").Last(), ms.ToArray());
+                    using (var ms = new MemoryStream())
+                    {
+                        streamToReadFrom.CopyTo(ms);
+                        LocalFilesystemRegistry.SaveFile(path.Split("/").Last(), ms.ToArray());
+                    }
                     return 1;
                 }
-                return -1;
             }
         }
         public static string ReplaceDownloadURL(string rawInput)
@@ -58,15 +63,15 @@ namespace RegistryPrototype.DAL.Commands
             var match = Regex.Match(rawInput, httpRegex, options);
             var input = rawInput;
             //Old school find, split, replace, build string
-            if (match.Value.Contains("http"))
+            if (match.Value.Contains("http", StringComparison.CurrentCulture))
             {
                 var stringSplit = match.Value.Split("/-/");
                 var endString = "";
                 foreach (var item in stringSplit)
                 {
-                    if (item.EndsWith(packname))
+                    if (item.EndsWith(packname, StringComparison.CurrentCulture))
                     {
-                        endString = item.Replace(packname, "api/download/");
+                        endString = item.Replace(packname, "api/download/", StringComparison.CurrentCulture);
                     }
                     else
                         endString += item;
@@ -75,45 +80,55 @@ namespace RegistryPrototype.DAL.Commands
                 var urlSplit = endString.Split("//").Last().Split("/").First();
                 input = Regex.Replace(rawInput, httpRegex, endString, options);
                 //The last is just for debugging purposes while developing locally
-                input = input.Replace(urlSplit, "192.168.0.10:5000").Replace("https", "http");
+                input = input.Replace(urlSplit, "192.168.0.10:5000", StringComparison.CurrentCulture).Replace("https", "http", StringComparison.CurrentCulture);
             }
             return input;
         }
         public static void Execute()
         {
             var collection = new List<MinimalPackage>();
-            using (var pack = new PackageRepository())
+            var pack = new PackageRepository();
+
+
+            foreach (var item in pack.GetAllElements())
             {
-                foreach (var item in pack.GetAllElements())
+                if (!item.RawMetaData.Contains("http://192.168.0.10:5000", StringComparison.CurrentCulture))
                 {
-                    if (!item.RawMetaData.Contains("http://192.168.0.10:5000"))
-                    {
-                        collection.Add(item);
-                    }
+                    collection.Add(item);
                 }
             }
+
             foreach (var item in collection)
             {
                 var jsonObjPreFix = JObject.Parse(item.RawMetaData);
-                var latestVersion = jsonObjPreFix["dist-tags"].First.First.ToString().Replace("{", "").Replace("}", "");
+                var latestVersion = jsonObjPreFix["dist-tags"].First.First.ToString().Replace("{", "", StringComparison.CurrentCulture).Replace("}", "", StringComparison.CurrentCulture);
                 //The following code is ment to download the tgz so we can serve it from our own repository, but there's some issues with race conditions...
                 var dist = jsonObjPreFix["versions"][latestVersion]["dist"]["tarball"].ToString();
                 _ = DownloadLocalCopyOfPackage(dist);
                 var input = ReplaceDownloadURL(item.RawMetaData);
                 var jsonObj = JObject.Parse(input);
+                var stringfu = JsonConvert.SerializeObject(jsonObj);
+                if (stringfu.Length >= 5 * 1024 * 1024)
+                {
+                    Debug.WriteLine("Size greater than 5MB");
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+                    throw new Exception(message: _exMessage);
+                    return;
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+                }
                 var packageVersions = jsonObj["versions"].ToString();
                 var connectionString = ServerStrings.GetMySQLConnectionString();
                 using (var conn = new MySqlConnection(connectionString))
                 {
-                    var result = conn.Execute("INSERT INTO Packages (_ID,RawMetaData,Versions,IFromPublicRepo) " +
-                        "VALUES (@name,@rawMetaData,@versions,'1') ON DUPLICATE KEY UPDATE " +
+                    var result = conn.Execute("INSERT INTO Packages (_ID,RawMetaData,Versions,IsFromPublicRepo) " +
+                        "VALUES (@name,@rawMetaData,@versions,1) ON DUPLICATE KEY UPDATE " +
                         "RawMetaData = @rawMetaDataOne, Versions = @versionsOne",
                         new
                         {
                             name = item._ID,
-                            rawMetaData = input,
+                            rawMetaData = stringfu,
                             versions = packageVersions,
-                            rawMetaDataOne = input,
+                            rawMetaDataOne = stringfu,
                             versionsOne = packageVersions
                         });
                 }

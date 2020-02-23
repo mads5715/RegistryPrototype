@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RegistryPrototype.DAL.Commands
@@ -38,6 +39,9 @@ namespace RegistryPrototype.DAL.Commands
             var dist = jsonObjPreFix["versions"][latestVersion]["dist"]["tarball"].ToString();
             if (!File.Exists(dist.Split("/").Last()))
             {
+                new Thread(() => {
+                    //DownloadPackageAndUpdateDB.Execute();
+                }).Start();
                 //string jobId = BackgroundJob.Enqueue(() => DownloadPackageAndUpdateDB.Execute());
             }
             //Let's just get the dirty stuff fixed first, making the download url proper, so we do not have to thing about it later.

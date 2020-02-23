@@ -39,10 +39,11 @@ namespace RegistryPrototype.Controllers
     [ApiController]
     public class RepositoryController : ControllerBase
     {
-        private IRestClient forwardClient;
-        IRestRequest request = new RestRequest("{name}", Method.GET).AddHeader("Accept", "application/vnd.npm.install-v1+json");
+        private readonly IRestClient forwardClient;
+        private readonly IRestRequest request = new RestRequest("{name}", Method.GET).AddHeader("Accept", "application/vnd.npm.install-v1+json");
         private readonly IRepository<MinimalPackage, string> _packageRepo;
-        public RepositoryController(IRepository<MinimalPackage,string> repository) {
+        public RepositoryController(IRepository<MinimalPackage, string> repository)
+        {
             forwardClient = new RestClient("https://registry.npmjs.org/");
             _packageRepo = repository;
         }
@@ -60,23 +61,22 @@ namespace RegistryPrototype.Controllers
             {
                 if (item.Key == "User-Agent")
                 {
-                    if (item.Value.ToString().StartsWith("npm/"))
+                    if (item.Value.ToString().StartsWith("npm/", StringComparison.CurrentCulture))
                     {
                         Debug.WriteLine("NPM is calling");
                     }
                 }
             }
-            
+
             Debug.WriteLine("NPM want's package with name: " + name);
-            using (_packageRepo)
+
+            var decodedname = HttpUtility.UrlDecode(name);
+            if (_packageRepo.ElementExist(decodedname))
             {
-                var decodedname = HttpUtility.UrlDecode(name);
-                if (_packageRepo.ElementExist(decodedname))
-                {
-                    Debug.WriteLine("In the DB!");
-                    return Ok(_packageRepo.GetSingleElement(decodedname));
-                }
+                Debug.WriteLine("In the DB!");
+                return Ok(_packageRepo.GetSingleElement(decodedname));
             }
+
             /*We check first to see if we have it, and if not, then we pass it along,
              * perhaps make a shallow copy of every package asked for,
              so we have a fast local copy instead of relying on this forwarding to the official repo, 
@@ -88,24 +88,23 @@ namespace RegistryPrototype.Controllers
             var returnContent = "";
             var response = forwardClient.Execute(request);
             returnContent = response.Content;
-            if (returnContent != string.Empty)
+            if (!string.IsNullOrEmpty(returnContent))
             {
                 //Save to disk, and to DB, then return response
                 new Thread(() => { _ = AddPackageFromOfficialRepo.Execute(JObject.Parse(returnContent).ToString()); }).Start();
-                using (_packageRepo)
+
+                var decodedname1 = HttpUtility.UrlDecode(name);
+                if (_packageRepo.ElementExist(decodedname))
                 {
-                    var decodedname = HttpUtility.UrlDecode(name);
-                    if (_packageRepo.ElementExist(decodedname))
-                    {
-                        Debug.WriteLine("Passing on to the official repo");
-                        return Ok(_packageRepo.GetSingleElement(decodedname));
-                    }
-                    else
-                    {
-                        var jobj = JObject.Parse(returnContent);
-                        _packageRepo.InsertElement(new MinimalPackage { RawMetaData = returnContent });
-                    }
+                    Debug.WriteLine("Passing on to the official repo");
+                    return Ok(_packageRepo.GetSingleElement(decodedname1));
                 }
+                else
+                {
+                    var jobj = JObject.Parse(returnContent);
+                    _packageRepo.InsertElement(new MinimalPackage { RawMetaData = returnContent });
+                }
+
                 //We parse it to get it to return a proper JSON object, it's also really slow, kinda weird but it works...
                 return Ok(JObject.Parse(returnContent));
                 //return StatusCode(404);
@@ -123,7 +122,7 @@ namespace RegistryPrototype.Controllers
         [Route("{packagename}/-/{filename}")]
         public IActionResult GetFile(string packagename, string filename)
         {
-            Console.WriteLine("NPM requested the following: "+packagename+"/-/"+filename);
+            Console.WriteLine("NPM requested the following: " + packagename + "/-/" + filename);
             return Ok();
         }
 
@@ -146,7 +145,7 @@ namespace RegistryPrototype.Controllers
             }
             using (var reader = new StreamReader(HttpContext.Request.Body))
             {
-               _ =new AddPackageCommand().Execute(reader.ReadToEnd());
+                _ = new AddPackageCommand().Execute(reader.ReadToEnd());
             }
             return Ok();
         }

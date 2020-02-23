@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace RegistryPrototype.DAL
 {
-    public interface IRepository<T,Y> : IDisposable
+    public interface IRepository<T,Y>
     {
         List<T> GetAllElements();
         T GetSingleElement(Y input);

@@ -88,7 +88,8 @@ namespace RegistryPrototype.DAL
                 {
                     //There's a slight chance that it might not have been tampered too much with, well just checking size isn't enough but a fair starting point   
                 }
-                var result = conn.Execute("INSERT INTO Packages (Name,_ID,Filename,Author,PackageDescription,RawMetaData,Versions,DistTags) " +
+
+                _ = conn.Execute("INSERT INTO Packages (Name,_ID,Filename,Author,PackageDescription,RawMetaData,Versions,DistTags,CanBeServedFromServer,OnLocalFileSystem) " +
                     "VALUES (@packagename,@uid,@filenameDB,@auther,@desc,@raw,@versions,@dists)" +
                     " ON DUPLICATE KEY UPDATE " +
                     "Name=@packagename," +
@@ -97,18 +98,20 @@ namespace RegistryPrototype.DAL
                     "PackageDescription=@desc," +
                     "RawMetaData=@raw," +
                     "Versions=@versions," +
-                    "DistTags=@dists",
+                    "DistTags=@dists," +
+                    "CanBeServedFromServer = 1," +
+                    "OnLocalFileSystem = 1",
                     new
                     {
                         packagename = name,
                         uid = guid,
                         filenameDB = filename,
                         auther = packageAuther,
-                        desc= packageDesc,
+                        desc = packageDesc,
                         raw = input,
                         versions = packageVersions,
                         dists = distTags
-                        
+
                     });
                 return filename;
             }

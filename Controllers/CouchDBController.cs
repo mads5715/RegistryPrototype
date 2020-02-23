@@ -89,8 +89,7 @@ namespace RegistryPrototype.Controllers
             {
                 var body = reader.ReadToEnd();
                 var userToInsert = JsonConvert.DeserializeObject<User>(body);
-                using (_userRepo)
-                {
+                
                     var userExists = _userRepo.ElementExist(userToInsert.Name);
                     if (userExists)
                     {
@@ -106,7 +105,7 @@ namespace RegistryPrototype.Controllers
                     {
                         return StatusCode(401, new { ok = false, message = "Possibly wrong username, password or email try again" });
                     }
-                }
+                
                 //If user doesn't exist return error and only allow admin controllers to add users...
                 //if (true)
                 //{

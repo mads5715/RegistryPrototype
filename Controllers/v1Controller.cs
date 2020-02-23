@@ -90,8 +90,7 @@ namespace RegistryPrototype.Controllers
              * and checking the search object if there's any packages,
              * if not return 0 for amount of items,
              * makes the search seem to work*/
-            using (_repo)
-            {
+            
                 if (_repo.GetAllElements().FirstOrDefault(x => x._ID.Contains(text)) != null)
                 {
                     if (!_repo.GetAllElements().First(x => x._ID.Contains(text)).IsFromPublicRepo)
@@ -104,7 +103,7 @@ namespace RegistryPrototype.Controllers
                     //TODO: Do a search on the official repo on behalf of the user
                     return Ok(new SearchObject());
                 }
-            }
+            
             request.AddQueryParameter("text",text);
             var returnContent = "";
             var response = forwardClient.Execute(request);

@@ -33,12 +33,13 @@ namespace RegistryPrototype.Controllers
         public IActionResult DownloadFile(string packagename) {
             if (SystemFile.Exists(packagename))
             {
-                Stream stream = new MemoryStream(SystemFile.ReadAllBytes(packagename));
+                using (Stream stream = new MemoryStream(SystemFile.ReadAllBytes(packagename)))
+                {
+                    if (stream == null)
+                        return NotFound(); // returns a NotFoundResult with Status404NotFound response.
 
-                if (stream == null)
-                    return NotFound(); // returns a NotFoundResult with Status404NotFound response.
-
-                return File(stream, "application/octet-stream"); // returns a FileStreamResult
+                    return File(stream, "application/octet-stream"); // returns a FileStreamResult
+                }
             }
             else { return NotFound(); }
            
